@@ -88,7 +88,7 @@ func New(opts ...Option) (*Win, error) {
 
 	var err error
 	mainthread.Call(func() {
-		w.w, err = makeGLFWWin(&o)
+		w.Window, err = makeGLFWWin(&o)
 	})
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func New(opts ...Option) (*Win, error) {
 
 	mainthread.Call(func() {
 		// hiDPI hack
-		width, _ := w.w.GetFramebufferSize()
+		width, _ := w.Window.GetFramebufferSize()
 		w.ratio = width / o.width
 		if w.ratio < 1 {
 			w.ratio = 1
@@ -105,8 +105,8 @@ func New(opts ...Option) (*Win, error) {
 			o.width /= w.ratio
 			o.height /= w.ratio
 		}
-		w.w.Destroy()
-		w.w, err = makeGLFWWin(&o)
+		w.Window.Destroy()
+		w.Window, err = makeGLFWWin(&o)
 	})
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ type Win struct {
 	newSize chan image.Rectangle
 	finish  chan struct{}
 
-	w     *glfw.Window
+	*glfw.Window
 	img   *image.RGBA
 	ratio int
 }
@@ -208,12 +208,14 @@ var keys = map[glfw.Key]Key{
 func (w *Win) eventThread() {
 	var moX, moY int
 
-	w.w.SetCursorPosCallback(func(_ *glfw.Window, x, y float64) {
+	w.Window.SetCursorPosCallback(func(_ *glfw.Window, x, y float64) {
 		moX, moY = int(x), int(y)
 		w.eventsIn <- MoMove{image.Pt(moX*w.ratio, moY*w.ratio)}
 	})
 
-	w.w.SetMouseButtonCallback(func(_ *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
+	w.Window.SetMouseButtonCallback(func(
+		_ *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey,
+	) {
 		b, ok := buttons[button]
 		if !ok {
 			return
@@ -226,15 +228,15 @@ func (w *Win) eventThread() {
 		}
 	})
 
-	w.w.SetScrollCallback(func(_ *glfw.Window, xoff, yoff float64) {
+	w.Window.SetScrollCallback(func(_ *glfw.Window, xoff, yoff float64) {
 		w.eventsIn <- MoScroll{image.Pt(int(xoff), int(yoff))}
 	})
 
-	w.w.SetCharCallback(func(_ *glfw.Window, r rune) {
+	w.Window.SetCharCallback(func(_ *glfw.Window, r rune) {
 		w.eventsIn <- KbType{r}
 	})
 
-	w.w.SetKeyCallback(func(_ *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
+	w.Window.SetKeyCallback(func(_ *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
 		k, ok := keys[key]
 		if !ok {
 			return
@@ -249,17 +251,17 @@ func (w *Win) eventThread() {
 		}
 	})
 
-	w.w.SetFramebufferSizeCallback(func(_ *glfw.Window, width, height int) {
+	w.Window.SetFramebufferSizeCallback(func(_ *glfw.Window, width, height int) {
 		r := image.Rect(0, 0, width, height)
 		w.newSize <- r
 		w.eventsIn <- gui.Resize{Rectangle: r}
 	})
 
-	w.w.SetCloseCallback(func(*glfw.Window) {
+	w.Window.SetCloseCallback(func(*glfw.Window) {
 		w.eventsIn <- WiClose{}
 	})
 
-	w.w.SetRefreshCallback(func(*glfw.Window) {
+	w.Window.SetRefreshCallback(func(*glfw.Window) {
 		w.eventsIn <- WiRefresh{}
 	})
 
@@ -270,7 +272,7 @@ func (w *Win) eventThread() {
 		select {
 		case <-w.finish:
 			close(w.eventsIn)
-			w.w.Destroy()
+			w.Window.Destroy()
 			return
 		default:
 			glfw.WaitEventsTimeout(1.0 / 30)
@@ -279,7 +281,7 @@ func (w *Win) eventThread() {
 }
 
 func (w *Win) openGLThread() {
-	w.w.MakeContextCurrent()
+	w.Window.MakeContextCurrent()
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
