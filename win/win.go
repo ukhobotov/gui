@@ -170,6 +170,13 @@ type Win struct {
 	ratio int
 }
 
+// SetTitle sets window's title
+func (w *Win) SetTitle(title string) {
+	mainthread.Call(func() {
+		w.w.SetTitle(title)
+	})
+}
+
 // Events returns the events channel of the window.
 func (w *Win) Events() <-chan gui.Event { return w.eventsOut }
 
