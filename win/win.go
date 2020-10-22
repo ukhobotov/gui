@@ -7,10 +7,11 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/faiface/gui"
 	"github.com/faiface/mainthread"
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+
+	"github.com/faiface/gui"
 )
 
 // Option is a functional option to the window constructor New.
@@ -269,7 +270,7 @@ func (w *Win) eventThread() {
 	})
 
 	w.w.SetRefreshCallback(func(*glfw.Window) {
-		w.eventsIn <- WiRefresh{}
+		w.eventsIn <- gui.Refresh{}
 	})
 
 	r := w.img.Bounds()

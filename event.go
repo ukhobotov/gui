@@ -13,15 +13,18 @@ import (
 type Event interface {
 	EventString() string
 }
+type (
+	// Resize is an event that happens when the environment changes the size of its drawing area.
+	Resize struct {
+		image.Rectangle
+	}
 
-// Resize is an event that happens when the environment changes the size of its drawing area.
-type Resize struct {
-	image.Rectangle
-}
+	// Refresh is an event that happens when the environment (or window) is being refreshed.
+	Refresh struct{}
+)
 
-func (r Resize) EventString() string {
-	return fmt.Sprintf("resize/%d/%d/%d/%d", r.Min.X, r.Min.Y, r.Max.X, r.Max.Y)
-}
+func (r Resize) EventString() string { return fmt.Sprintf("resize/%v", r) }
+func (Refresh) EventString() string  { return "refresh" }
 
 // MakeEventsChan implements a channel of events with an unlimited capacity. It does so
 // by creating a goroutine that queues incoming events. Sending to this channel never blocks
