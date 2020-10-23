@@ -11,8 +11,9 @@ import (
 // may implement more kinds of events. For example, the win package implements all kinds of
 // events for mouse and keyboard.
 type Event interface {
-	EventString() string
+	String() string
 }
+
 type (
 	// Resize is an event that happens when the environment changes the size of its drawing area.
 	Resize struct {
@@ -23,8 +24,8 @@ type (
 	Refresh struct{}
 )
 
-func (r Resize) EventString() string { return fmt.Sprintf("resize/%v", r) }
-func (Refresh) EventString() string  { return "refresh" }
+func (r Resize) String() string { return fmt.Sprintf("resize/%v", r.Rectangle) }
+func (Refresh) String() string  { return "refresh" }
 
 // MakeEventsChan implements a channel of events with an unlimited capacity. It does so
 // by creating a goroutine that queues incoming events. Sending to this channel never blocks
