@@ -1,6 +1,6 @@
-module github.com/faiface/gui
-
 go 1.15
+
+module github.com/faiface/gui
 
 require (
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3
