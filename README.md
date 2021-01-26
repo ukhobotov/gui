@@ -221,7 +221,7 @@ import (
 	"image/draw"
 	"time"
 
-	"github.com/faiface/gui"
+	"github.com/ukhobotov/gui"
 	"github.com/faiface/gui/win"
 	"github.com/faiface/mainthread"
 )
