@@ -216,16 +216,12 @@ var keys = map[glfw.Key]Key{
 func (w *Win) eventThread() {
 	var moX, moY int
 
-	w.eventsIn <- gui.Resize{Rectangle: w.img.Rect}
-
 	w.w.SetCursorPosCallback(func(_ *glfw.Window, x, y float64) {
 		moX, moY = int(x), int(y)
 		w.eventsIn <- MoMove{image.Pt(moX*w.ratio, moY*w.ratio)}
 	})
 
-	w.w.SetMouseButtonCallback(func(
-		_ *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey,
-	) {
+	w.w.SetMouseButtonCallback(func(_ *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
 		b, ok := buttons[button]
 		if !ok {
 			return
