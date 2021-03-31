@@ -29,5 +29,15 @@ import (
 // the user of the Env should subsequently close the Draw() channel.
 type Env interface {
 	Events() <-chan Event
-	Draw() chan<- func(draw.Image) image.Rectangle
+	Draw() chan<- Drawable
+}
+
+type Drawable interface {
+	Draw(dst draw.Image) image.Rectangle
+}
+
+type DrawableFunc func(dst draw.Image) image.Rectangle
+
+func (d DrawableFunc) Draw(dst draw.Image) image.Rectangle {
+	return d(dst)
 }

@@ -82,7 +82,7 @@ func New(opts ...Option) (*Win, error) {
 	w := &Win{
 		eventsOut: eventsOut,
 		eventsIn:  eventsIn,
-		draw:      make(chan func(draw.Image) image.Rectangle),
+		draw:      make(chan gui.Drawable),
 		newSize:   make(chan image.Rectangle),
 		finish:    make(chan struct{}),
 	}
@@ -161,7 +161,7 @@ func makeGLFWWin(o *options) (*glfw.Window, error) {
 type Win struct {
 	eventsOut <-chan gui.Event
 	eventsIn  chan<- gui.Event
-	draw      chan func(draw.Image) image.Rectangle
+	draw      chan gui.Drawable
 
 	newSize chan image.Rectangle
 	finish  chan struct{}
@@ -182,7 +182,7 @@ func (w *Win) SetTitle(title string) {
 func (w *Win) Events() <-chan gui.Event { return w.eventsOut }
 
 // Draw returns the draw channel of the window.
-func (w *Win) Draw() chan<- func(draw.Image) image.Rectangle { return w.draw }
+func (w *Win) Draw() chan<- gui.Drawable { return w.draw }
 
 var buttons = map[glfw.MouseButton]Button{
 	glfw.MouseButtonLeft:   ButtonLeft,
@@ -309,7 +309,7 @@ loop:
 				close(w.finish)
 				return
 			}
-			r := d(w.img)
+			r := d.Draw(w.img)
 			totalR = totalR.Union(r)
 		}
 
@@ -331,7 +331,7 @@ loop:
 					close(w.finish)
 					return
 				}
-				r := d(w.img)
+				r := d.Draw(w.img)
 				totalR = totalR.Union(r)
 			}
 		}
