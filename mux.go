@@ -11,7 +11,7 @@ type Mux struct {
 	mu         sync.Mutex
 	lastResize Event
 	eventsIns  []chan<- Event
-	draw       chan<- Drawable
+	draw       chan<- Draw
 }
 
 // NewMux creates a new Mux that multiplexes the given Env. It returns the Mux along with
@@ -19,7 +19,7 @@ type Mux struct {
 // closing the Draw() channel on the master Env closes the whole Mux and all other Envs
 // created by the Mux.
 func NewMux(env Env) (mux *Mux, master Env) {
-	drawChan := make(chan Drawable)
+	drawChan := make(chan Draw)
 	mux = &Mux{draw: drawChan}
 	master = mux.makeEnv(true)
 
@@ -60,15 +60,15 @@ func (mux *Mux) MakeEnv() Env {
 
 type muxEnv struct {
 	events <-chan Event
-	draw   chan<- Drawable
+	draw   chan<- Draw
 }
 
-func (m *muxEnv) Events() <-chan Event  { return m.events }
-func (m *muxEnv) Draw() chan<- Drawable { return m.draw }
+func (m *muxEnv) Events() <-chan Event { return m.events }
+func (m *muxEnv) Draw() chan<- Draw    { return m.draw }
 
 func (mux *Mux) makeEnv(master bool) Env {
 	eventsOut, eventsIn := MakeEventsChan()
-	drawChan := make(chan Drawable)
+	drawChan := make(chan Draw)
 	env := &muxEnv{eventsOut, drawChan}
 
 	mux.mu.Lock()
